@@ -10,10 +10,12 @@ import {
   Legend,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { formatCurrencyCompact, formatCurrency } from '@/lib/formatters';
 import type { FireResult } from '@/types';
 import { useT } from '@/lib/i18n';
 import { Scale } from 'lucide-react';
+import { useState } from 'react';
 
 interface IncomeExpenseChartProps {
   result: FireResult;
@@ -21,6 +23,7 @@ interface IncomeExpenseChartProps {
 
 export function IncomeExpenseChart({ result }: IncomeExpenseChartProps) {
   const t = useT();
+  const [stacked, setStacked] = useState(true);
   // Show only accumulation years + a few post-retirement
   const data = result.yearlyProjections
     .filter((p) => !p.isRetired || p.age <= result.fireAge + 5)
@@ -40,9 +43,29 @@ export function IncomeExpenseChart({ result }: IncomeExpenseChartProps) {
           <Scale className="w-4 h-4 text-primary" />
           {t.incomeVsExpenses}
         </CardTitle>
-        <p className="text-xs text-muted-foreground mt-1">
-          {t.incomeVsExpensesDesc}
-        </p>
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground">
+            {t.incomeVsExpensesDesc}
+          </p>
+          <div className="flex items-center gap-1 shrink-0">
+            <Button
+              variant={stacked ? 'default' : 'outline'}
+              size="sm"
+              className="h-7 px-2 text-[11px]"
+              onClick={() => setStacked(true)}
+            >
+              Stacked
+            </Button>
+            <Button
+              variant={!stacked ? 'default' : 'outline'}
+              size="sm"
+              className="h-7 px-2 text-[11px]"
+              onClick={() => setStacked(false)}
+            >
+              Unstacked
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="h-[300px] w-full">
@@ -135,7 +158,7 @@ export function IncomeExpenseChart({ result }: IncomeExpenseChartProps) {
               <Area
                 type="monotone"
                 dataKey="livingExpenses"
-                stackId="spending"
+                stackId={stacked ? 'spending' : undefined}
                 stroke="hsl(0, 84%, 60%)"
                 strokeWidth={2}
                 fill="hsl(0, 84%, 60%)"
@@ -145,7 +168,7 @@ export function IncomeExpenseChart({ result }: IncomeExpenseChartProps) {
               <Area
                 type="monotone"
                 dataKey="debtPayments"
-                stackId="spending"
+                stackId={stacked ? 'spending' : undefined}
                 stroke="hsl(30, 90%, 55%)"
                 strokeWidth={2}
                 fill="hsl(30, 90%, 55%)"
