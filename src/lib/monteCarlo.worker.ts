@@ -11,6 +11,7 @@ export interface MCWorkerRequest {
   inputs: FireInputs;
   numSimulations: number;
   targetFireAge?: number;
+  randomSamples?: number[][];
 }
 
 export interface MCWorkerResponse {
@@ -19,7 +20,7 @@ export interface MCWorkerResponse {
 }
 
 self.onmessage = (e: MessageEvent<MCWorkerRequest>) => {
-  const { id, inputs, numSimulations, targetFireAge } = e.data;
-  const result = runMonteCarlo(inputs, numSimulations, targetFireAge);
+  const { id, inputs, numSimulations, targetFireAge, randomSamples } = e.data;
+  const result = runMonteCarlo(inputs, numSimulations, targetFireAge, randomSamples);
   (self as unknown as Worker).postMessage({ id, result } satisfies MCWorkerResponse);
 };

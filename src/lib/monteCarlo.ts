@@ -69,6 +69,7 @@ export function runMonteCarlo(
   inputs: FireInputs,
   numSimulations: number = 500,
   targetFireAge?: number,
+  randomSamples?: number[][],
 ): MonteCarloResult {
   const {
     personalInfo,
@@ -129,11 +130,17 @@ export function runMonteCarlo(
       })),
   ];
 
-  // Deterministic seed from inputs + targetFireAge — same params ⇒ same results
-  const seedStr = JSON.stringify(inputs) + (targetFireAge ?? '');
-  const seed = hashSeed(seedStr);
-  const rng = mulberry32(seed);
-  const randn = createRandn(rng);
+  // Deterministic random samples based on inputs only.
+  // This lets callers vary targetFireAge without regenerating the random paths.
+  const samples = randomSamples ?? (() => {
+    const seedStr = JSON.stringify(inputs);
+    const seed = hashSeed(seedStr);
+    const rng = mulberry32(seed);
+    const randn = createRandn(rng);
+    return Array.from({ length: numSimulations }, () =>
+      Array.from({ length: maxYears }, () => randn()),
+    );
+  })();
 
   // Storage for all simulation paths
   const allPaths: number[][] = [];
@@ -164,7 +171,8 @@ export function runMonteCarlo(
 
       // Random return for this year (log-normal distribution)
       const mu = Math.log(1 + arithmeticNet) - Math.pow(volatility, 2) / 2;
-      const rawReturn = Math.exp(mu + volatility * randn()) - 1;
+      const z = samples[sim]?.[i] ?? 0;
+      const rawReturn = Math.exp(mu + volatility * z) - 1;
       const randomReturn = Number.isFinite(rawReturn) ? rawReturn : 0;
 
       // Debt payments
