@@ -26,11 +26,11 @@ export function IncomeExpenseChart({ result }: IncomeExpenseChartProps) {
     .filter((p) => !p.isRetired || p.age <= result.fireAge + 5)
     .map((p) => ({
       age: p.age,
-      passiveIncome: Math.round(p.passiveIncome),
-      livingExpenses: Math.round(p.annualExpenses),
-      debtPayments: Math.round(p.annualDebtPayments),
-      totalSpending: Math.round(p.annualExpenses + p.annualDebtPayments),
-      totalIncome: Math.round(p.totalIncome),
+      passiveIncome: p.passiveIncome,
+      livingExpenses: p.annualExpenses,
+      debtPayments: p.annualDebtPayments,
+      totalSpending: p.annualExpenses + p.annualDebtPayments,
+      totalIncome: p.totalIncome,
     }));
 
   return (

@@ -243,4 +243,37 @@ describe('calculateFire', () => {
     // Employer match of 250/mo = 3000/yr more, should reach FIRE faster
     expect(resultWith.fireAge).toBeLessThanOrEqual(resultNo.fireAge);
   });
+
+  it('annualExpenses strictly increase after FIRE with inflation in standard path', () => {
+    const inputs = makeInputs({
+      inflation: 3,
+      postRetirementPercent: 100,
+      investedAssets: 900000,
+      cashSavings: 100000,
+      monthlyInvestment: 0,
+    });
+    const result = calculateFire(inputs);
+    const retired = result.yearlyProjections.filter((p) => p.isRetired);
+    expect(retired.length).toBeGreaterThan(2);
+    expect(retired[1]!.annualExpenses).toBeGreaterThan(retired[0]!.annualExpenses);
+    expect(retired[2]!.annualExpenses).toBeGreaterThan(retired[1]!.annualExpenses);
+  });
+
+  it('annualExpenses strictly increase after FIRE with inflation in bridge path', () => {
+    const inputs = makeInputs({
+      inflation: 3,
+      postRetirementPercent: 100,
+      investedAssets: 40000,
+      cashSavings: 10000,
+      monthlyInvestment: 0,
+    });
+    inputs.fireGoals.futureIncomes = [
+      { id: 'bridge', name: 'Bridge payout', amount: 300000, yearsFromNow: 2, includeInFire: true },
+    ];
+    const result = calculateFire(inputs);
+    const retired = result.yearlyProjections.filter((p) => p.isRetired);
+    expect(retired.length).toBeGreaterThan(2);
+    expect(retired[1]!.annualExpenses).toBeGreaterThan(retired[0]!.annualExpenses);
+    expect(retired[2]!.annualExpenses).toBeGreaterThan(retired[1]!.annualExpenses);
+  });
 });
