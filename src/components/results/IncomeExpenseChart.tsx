@@ -1,6 +1,7 @@
 import {
   AreaChart,
   Area,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -172,9 +173,30 @@ export function IncomeExpenseChart({ result }: IncomeExpenseChartProps) {
                 stroke="hsl(30, 90%, 55%)"
                 strokeWidth={2}
                 fill="hsl(30, 90%, 55%)"
-                fillOpacity={0.2}
+                fillOpacity={stacked ? 0.2 : 0.05}
                 dot={false}
               />
+              {!stacked && (
+                <Line
+                  type="monotone"
+                  dataKey="debtPayments"
+                  stroke="hsl(30, 90%, 55%)"
+                  strokeWidth={3}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              )}
+              {!stacked && (
+                <Line
+                  type="monotone"
+                  dataKey="totalSpending"
+                  stroke="hsl(330, 80%, 70%)"
+                  strokeDasharray="6 4"
+                  strokeWidth={1.5}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              )}
               <Area
                 type="monotone"
                 dataKey="passiveIncome"
