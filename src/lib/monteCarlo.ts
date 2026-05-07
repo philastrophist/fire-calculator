@@ -94,6 +94,8 @@ export function runMonteCarlo(
   const postRetirementFactor = expenses.postRetirementExpensePercent / 100;
   const baseAnnualExpenses = expenses.monthlyExpenses * 12;
   const initialMonthlyInvestment = fireGoals.monthlyInvestment;
+  const initializeRetirementExpenses = (inflatedLivingExpenses: number) =>
+    inflatedLivingExpenses * postRetirementFactor * (1 + inflation);
 
   const maxYears = Math.max(1, personalInfo.lifeExpectancy - personalInfo.currentAge + 1);
   const mainPortfolioStart = assets.investedAssets + assets.cashSavings;
@@ -276,14 +278,14 @@ export function runMonteCarlo(
           if (age >= targetFireAge && fireAge === null) {
             fireAge = age;
             isRetired = true;
-            retirementExpenses = livingExpenses * postRetirementFactor;
+            retirementExpenses = initializeRetirementExpenses(livingExpenses);
           }
         } else {
           // Standard FIRE check
           if (portfolio >= adjustedRequired && fireAge === null) {
             fireAge = age;
             isRetired = true;
-            retirementExpenses = livingExpenses * postRetirementFactor;
+            retirementExpenses = initializeRetirementExpenses(livingExpenses);
           }
 
           // Bridge strategy: deterministic drawdown check (same as main calculator)
@@ -315,7 +317,7 @@ export function runMonteCarlo(
               if (survives) {
                 fireAge = age;
                 isRetired = true;
-                retirementExpenses = candidateRetExpenses;
+                retirementExpenses = initializeRetirementExpenses(livingExpenses);
               }
             }
           }

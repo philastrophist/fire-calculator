@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { runMonteCarlo } from '../lib/monteCarlo';
+import { calculateFire } from '../lib/calculator';
 import { DEFAULT_INPUTS } from '../lib/constants';
 import type { FireInputs } from '../types';
 
@@ -90,5 +91,22 @@ describe('runMonteCarlo', () => {
     const enhanced = runMonteCarlo(withCustom, 200);
     // More assets + contributions → reach FIRE sooner
     expect(enhanced.medianFireAge).toBeLessThanOrEqual(base.medianFireAge);
+  });
+
+  it('forced retirement boundary aligns with detected retirement boundary age semantics', () => {
+    const deterministic: FireInputs = {
+      ...DEFAULT_INPUTS,
+      investmentStrategy: {
+        ...DEFAULT_INPUTS.investmentStrategy,
+        annualVolatility: 0,
+      },
+    };
+
+    const calc = calculateFire(deterministic);
+    const detected = runMonteCarlo(deterministic, 1);
+    const forced = runMonteCarlo(deterministic, 1, calc.fireAge);
+
+    expect(forced.fireAgeDistribution[0]!.age).toBe(calc.fireAge);
+    expect(detected.fireAgeDistribution[0]!.age).toBe(calc.fireAge);
   });
 });

@@ -102,7 +102,7 @@ export function calculateFire(inputs: FireInputs): FireResult {
   let currentBonus = annualBonus;
   // livingExpenses is the annual living cost, inflated each year
   let livingExpenses = baseAnnualExpenses;
-  // retirementExpenses is captured at the point of FIRE, then inflated onward
+  // retirementExpenses tracks retirement-year spending for the current retired age point.
   let retirementExpenses = 0;
   let fireAge: number | null = null;
   let isRetired = false;
@@ -110,6 +110,8 @@ export function calculateFire(inputs: FireInputs): FireResult {
   let bridgeIncomeTotalAtFire = 0; // total bridge income expected
   let pensionCreditAtFire = 0;
   let debtCostAtFire = 0;
+  const initializeRetirementExpenses = (inflatedLivingExpenses: number) =>
+    inflatedLivingExpenses * postRetirementFactor * (1 + inflation);
 
   // Track remaining debts with years left
   let remainingDebts = assets.debts.map((d) => ({
@@ -268,7 +270,7 @@ export function calculateFire(inputs: FireInputs): FireResult {
         isRetired = true;
         pensionCreditAtFire = Math.max(0, fireNumberBaseToday - reqToday);
         debtCostAtFire = debtPV / inflationMultiplier;
-        retirementExpenses = livingExpenses * postRetirementFactor;
+        retirementExpenses = initializeRetirementExpenses(livingExpenses);
       }
 
       // ── Bridge strategy: simulate-to-verify ──
@@ -308,7 +310,7 @@ export function calculateFire(inputs: FireInputs): FireResult {
             bridgeIncomeTotalAtFire = bridgeIncomes.reduce((s, e) => s + e.amount, 0);
             pensionCreditAtFire = Math.max(0, fireNumberBaseToday - reqToday);
             debtCostAtFire = debtPV / inflationMultiplier;
-            retirementExpenses = candidateRetExpenses;
+            retirementExpenses = initializeRetirementExpenses(livingExpenses);
           }
         }
       }
@@ -321,8 +323,8 @@ export function calculateFire(inputs: FireInputs): FireResult {
       }
       portfolio = mainPortfolio;
 
-      // retirementExpenses was set at retirement from actual inflated living
-      // expenses, and continues to grow with inflation each iteration.
+      // retirementExpenses represents expenses for the current retired age point
+      // and continues to grow with inflation each iteration.
       const totalRetirementSpend = retirementExpenses + annualDebtPayments;
       const netWithdrawal = Math.max(0, totalRetirementSpend - pensionIncome - recurringIncome);
 
