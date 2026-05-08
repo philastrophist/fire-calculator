@@ -33,6 +33,17 @@ function toRecurringIncomeEntries(inputs: FireInputs): RecurringIncomeEntry[] {
   return [...fromGoals, ...fromRealEstate];
 }
 
+
+function toRecurringExpenseEntries(inputs: FireInputs): RecurringIncomeEntry[] {
+  return (inputs.fireGoals.recurringExpenditures ?? [])
+    .filter((i) => i.monthlyAmount > 0)
+    .map((i) => ({
+      annualAmount: i.monthlyAmount * 12,
+      startAge: i.startAge,
+      annualGrowthRate: i.annualGrowthRate / 100,
+      includeInFire: i.includeInFire,
+    }));
+}
 export function calculateFire(inputs: FireInputs): FireResult {
   const {
     personalInfo,
@@ -66,6 +77,7 @@ export function calculateFire(inputs: FireInputs): FireResult {
   // Build pension entries once
   const pensionEntries = toPensionEntries(inputs);
   const recurringIncomeEntries = toRecurringIncomeEntries(inputs);
+  const recurringExpenseEntries = toRecurringExpenseEntries(inputs);
 
   const totalMonthlyIncome = income.monthlyNetSalary + income.additionalMonthlyIncome;
   const annualBonus = income.annualBonus ?? 0;
@@ -145,9 +157,15 @@ export function calculateFire(inputs: FireInputs): FireResult {
 
     // ── Recurring non-compounding income (e.g., rental property) ──
     let recurringIncome = 0;
+    let recurringExpense = 0;
     for (const inc of recurringIncomeEntries) {
       if (age >= inc.startAge) {
         recurringIncome += inc.annualAmount * Math.pow(1 + inc.annualGrowthRate, i);
+      }
+    }
+    for (const exp of recurringExpenseEntries) {
+      if (age >= exp.startAge) {
+        recurringExpense += exp.annualAmount * Math.pow(1 + exp.annualGrowthRate, i);
       }
     }
 
@@ -216,10 +234,10 @@ export function calculateFire(inputs: FireInputs): FireResult {
         portfolioPessimistic: Math.max(0, portfolioPess),
         annualContributions: annualContribution,
         annualInvestmentGrowth: totalGrowth,
-        annualExpenses: livingExpenses + Math.max(0, -netOneTime),
+        annualExpenses: livingExpenses + recurringExpense + Math.max(0, -netOneTime),
         annualDebtPayments,
         passiveIncome,
-        totalIncome: totalAnnualIncome + pensionIncome + recurringIncome,
+        totalIncome: totalAnnualIncome + pensionIncome + recurringIncome - recurringExpense,
         cumulativeContributions,
         cumulativeGrowth,
         savingsRate:
@@ -300,6 +318,7 @@ export function calculateFire(inputs: FireInputs): FireResult {
             fireGoals.futureIncomes.filter((e) => e.yearsFromNow > i),
             fireGoals.futureExpenses.filter((e) => e.yearsFromNow > i),
             recurringIncomeEntries,
+            recurringExpenseEntries,
             capitalGainsTax,
             currentCostBasisRatio
           );
@@ -326,7 +345,7 @@ export function calculateFire(inputs: FireInputs): FireResult {
       // retirementExpenses represents expenses for the current retired age point
       // and continues to grow with inflation each iteration.
       const totalRetirementSpend = retirementExpenses + annualDebtPayments;
-      const netWithdrawal = Math.max(0, totalRetirementSpend - pensionIncome - recurringIncome);
+      const netWithdrawal = Math.max(0, totalRetirementSpend + recurringExpense - pensionIncome - recurringIncome);
 
       const growth = portfolio * netReturn;
       const portfolioBeforeWithdrawal = portfolio + growth;
@@ -370,7 +389,7 @@ export function calculateFire(inputs: FireInputs): FireResult {
         annualExpenses: retirementExpenses + Math.max(0, -netOneTime),
         annualDebtPayments,
         passiveIncome: portfolio * swr,
-        totalIncome: pensionIncome + recurringIncome,
+        totalIncome: pensionIncome + recurringIncome - recurringExpense,
         cumulativeContributions,
         cumulativeGrowth,
         savingsRate: 0,
@@ -410,6 +429,7 @@ export function calculateFire(inputs: FireInputs): FireResult {
     personalInfo.lifeExpectancy,
     inflation,
     recurringIncomeEntries.filter((inc) => inc.startAge <= fireAge || inc.includeInFire),
+    recurringExpenseEntries.filter((exp) => exp.startAge <= fireAge || exp.includeInFire),
     capitalGainsTax,
     finalCostBasisRatio,
     fireGoals.depletePortfolio !== false,
@@ -432,6 +452,7 @@ export function calculateFire(inputs: FireInputs): FireResult {
     personalInfo.lifeExpectancy,
     inflation,
     recurringIncomeEntries.filter((inc) => inc.startAge <= coastTargetAge || inc.includeInFire),
+    recurringExpenseEntries.filter((exp) => exp.startAge <= coastTargetAge || exp.includeInFire),
     capitalGainsTax,
     finalCostBasisRatio,
     fireGoals.depletePortfolio !== false,

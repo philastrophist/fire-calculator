@@ -104,6 +104,7 @@ export interface FireGoals {
   futureExpenses: FutureExpense[];
   futureIncomes: FutureIncome[];
   recurringIncomes: RecurringIncome[];
+  recurringExpenditures: RecurringIncome[];
 }
 
 export interface RecurringIncome {

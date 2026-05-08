@@ -183,6 +183,9 @@ export const useFireStore = create<FireStore>()(
             if (!Array.isArray(state.inputs.fireGoals.recurringIncomes)) {
               state.inputs.fireGoals.recurringIncomes = DEFAULT_INPUTS.fireGoals.recurringIncomes;
             }
+            if (!Array.isArray(state.inputs.fireGoals.recurringExpenditures)) {
+              state.inputs.fireGoals.recurringExpenditures = DEFAULT_INPUTS.fireGoals.recurringExpenditures;
+            }
 
             if (typeof state.inputs.fireGoals.depletePortfolio !== 'boolean') {
               state.inputs.fireGoals.depletePortfolio = true;
