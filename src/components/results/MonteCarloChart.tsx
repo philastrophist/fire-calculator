@@ -30,7 +30,7 @@ export function MonteCarloChart() {
   // Off-thread computation — never blocks the main thread.
   // Always pass effectiveTarget so the simulation is consistent whether
   // the user has touched the slider or not (forced-retirement mode).
-  const { mc, isComputing } = useMonteCarloWorker(inputs, 500, effectiveTarget);
+  const { mc, isComputing } = useMonteCarloWorker(inputs, 1000, effectiveTarget);
 
   // While the worker hasn't returned yet, show nothing on the chart but
   // keep all controls interactive.
@@ -46,7 +46,7 @@ export function MonteCarloChart() {
     : [];
 
   const successRate = mc?.successRate ?? 0;
-  const numSimulations = mc?.numSimulations ?? 500;
+  const numSimulations = mc?.numSimulations ?? 1000;
   const successColor = successRate >= 90
     ? 'text-emerald-500'
     : successRate >= 70
