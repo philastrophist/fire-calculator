@@ -4,6 +4,41 @@ import type { FireInputs } from '@/types';
 import type { MonteCarloResult } from './monteCarlo';
 import type { MCWorkerRequest, MCWorkerResponse } from './monteCarlo.worker';
 
+function createSamples(inputs: FireInputs, numSimulations: number): number[][] {
+  const maxYears = Math.max(1, inputs.personalInfo.lifeExpectancy - inputs.personalInfo.currentAge + 1);
+
+  const hashSeed = (str: string): number => {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+    return h;
+  };
+
+  const mulberry32 = (seed: number): (() => number) => {
+    let state = seed | 0;
+    return () => {
+      state = (state + 0x6d2b79f5) | 0;
+      let t = Math.imul(state ^ (state >>> 15), 1 | state);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  };
+
+  const createRandn = (rng: () => number): (() => number) => () => {
+    let u = 0, v = 0;
+    while (u === 0) u = rng();
+    while (v === 0) v = rng();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+  };
+
+  const seed = hashSeed(JSON.stringify(inputs));
+  const randn = createRandn(mulberry32(seed));
+
+  return Array.from({ length: numSimulations }, () =>
+    Array.from({ length: maxYears }, () => randn()),
+  );
+}
+
+
 /**
  * Custom hook that acts like useEffect but does a deep comparison of dependencies.
  */
@@ -30,6 +65,8 @@ export function useMonteCarloWorker(
   const workerRef = useRef<Worker | null>(null);
   const requestIdRef = useRef(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const samplesRef = useRef<number[][] | null>(null);
+  const samplesKeyRef = useRef<string>('');
 
   const [mc, setMc] = useState<MonteCarloResult | null>(null);
   const [isComputing, setIsComputing] = useState(true);
@@ -66,11 +103,17 @@ export function useMonteCarloWorker(
 
     debounceRef.current = setTimeout(() => {
       const id = ++requestIdRef.current;
+      const samplesKey = JSON.stringify([inputs, numSimulations]);
+      if (samplesKeyRef.current !== samplesKey || !samplesRef.current) {
+        samplesRef.current = createSamples(inputs, numSimulations);
+        samplesKeyRef.current = samplesKey;
+      }
       workerRef.current?.postMessage({
         id,
         inputs,
         numSimulations,
         targetFireAge,
+        randomSamples: samplesRef.current,
       } satisfies MCWorkerRequest);
     }, 300);
 
