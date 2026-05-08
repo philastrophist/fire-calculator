@@ -262,6 +262,7 @@ export function calculateFire(inputs: FireInputs): FireResult {
         personalInfo.lifeExpectancy,
         inflation,
         recurringIncomeEntries.filter((inc) => inc.startAge <= age || inc.includeInFire),
+        recurringExpenseEntries.filter((exp) => exp.startAge <= age || exp.includeInFire),
         capitalGainsTax,
         currentCostBasisRatio,
         fireGoals.depletePortfolio !== false,
