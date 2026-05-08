@@ -1301,6 +1301,11 @@ function LifeEventsSection() {
             <Plus className="w-3 h-3 mr-1" /> {t.add}
           </Button>
         </div>
+        {recurringExpenditures.length === 0 && (
+          <p className="text-xs text-muted-foreground/60 text-center py-2">
+            {t.noRecurringExpenditure}
+          </p>
+        )}
         {recurringExpenditures.map((inc, i) => (
           <div key={inc.id} className="border border-border rounded-lg p-3 mb-2 space-y-2 animate-slide-up">
             <div className="flex items-center justify-between">
