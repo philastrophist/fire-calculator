@@ -71,6 +71,7 @@ function makeInputs(overrides: Partial<{
       futureExpenses: [],
       futureIncomes: [],
       recurringIncomes: [],
+      recurringExpenditures: [],
     },
   };
 }

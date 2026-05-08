@@ -980,28 +980,6 @@ function AssetsSection() {
         ))}
       </div>
 
-      {/* ── Recurring Expenditure ── */}
-      <div className="pt-3 border-t border-border">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-xs font-medium text-muted-foreground">Recurring expenditure</h4>
-          <Button variant="outline" size="sm" onClick={addRecurringExpenditure} className="h-7 text-xs">
-            <Plus className="w-3 h-3 mr-1" /> {t.add}
-          </Button>
-        </div>
-        {recurringExpenditures.map((inc, i) => (
-          <div key={inc.id} className="border border-border rounded-lg p-3 mb-2 space-y-2 animate-slide-up">
-            <div className="flex items-center justify-between">
-              <Input type="text" value={inc.name} onChange={(e) => updateRecurringExpenditure(inc.id, { name: e.target.value })} placeholder={`Recurring Expenditure ${i + 1}`} className="border-0 bg-transparent p-0 h-auto text-sm font-medium focus-visible:ring-0"/>
-              <Button variant="ghost" size="icon" onClick={() => removeRecurringExpenditure(inc.id)} className="text-destructive h-7 w-7"><Trash2 className="w-3.5 h-3.5"/></Button>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <CurrencyInput label="Monthly Expenditure" value={inc.monthlyAmount} onChange={(v) => updateRecurringExpenditure(inc.id, { monthlyAmount: v })} />
-              <NumberInput label={t.recurringIncomeStartAge} value={inc.startAge} onChange={(v) => updateRecurringExpenditure(inc.id, { startAge: v })} suffix=" yrs" min={currentAge} max={90} />
-            </div>
-            <PercentInput label={t.recurringIncomeGrowth} value={inc.annualGrowthRate} onChange={(v) => updateRecurringExpenditure(inc.id, { annualGrowthRate: v })} step={0.25} min={-5} max={15} />
-          </div>
-        ))}
-      </div>
     </Section>
   );
 }
@@ -1441,28 +1419,6 @@ function GoalsSection() {
         </p>
       </div>
 
-      {/* ── Recurring Expenditure ── */}
-      <div className="pt-3 border-t border-border">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-xs font-medium text-muted-foreground">Recurring expenditure</h4>
-          <Button variant="outline" size="sm" onClick={addRecurringExpenditure} className="h-7 text-xs">
-            <Plus className="w-3 h-3 mr-1" /> {t.add}
-          </Button>
-        </div>
-        {recurringExpenditures.map((inc, i) => (
-          <div key={inc.id} className="border border-border rounded-lg p-3 mb-2 space-y-2 animate-slide-up">
-            <div className="flex items-center justify-between">
-              <Input type="text" value={inc.name} onChange={(e) => updateRecurringExpenditure(inc.id, { name: e.target.value })} placeholder={`Recurring Expenditure ${i + 1}`} className="border-0 bg-transparent p-0 h-auto text-sm font-medium focus-visible:ring-0"/>
-              <Button variant="ghost" size="icon" onClick={() => removeRecurringExpenditure(inc.id)} className="text-destructive h-7 w-7"><Trash2 className="w-3.5 h-3.5"/></Button>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <CurrencyInput label="Monthly Expenditure" value={inc.monthlyAmount} onChange={(v) => updateRecurringExpenditure(inc.id, { monthlyAmount: v })} />
-              <NumberInput label={t.recurringIncomeStartAge} value={inc.startAge} onChange={(v) => updateRecurringExpenditure(inc.id, { startAge: v })} suffix=" yrs" min={currentAge} max={90} />
-            </div>
-            <PercentInput label={t.recurringIncomeGrowth} value={inc.annualGrowthRate} onChange={(v) => updateRecurringExpenditure(inc.id, { annualGrowthRate: v })} step={0.25} min={-5} max={15} />
-          </div>
-        ))}
-      </div>
     </Section>
   );
 }
