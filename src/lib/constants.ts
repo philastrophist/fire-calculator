@@ -127,6 +127,7 @@ export const DEFAULT_FIRE_GOALS: FireGoals = {
   futureExpenses: [],
   futureIncomes: [],
   recurringIncomes: [],
+  recurringExpenditures: [],
 };
 
 export const COAST_TARGET_AGE = 65;

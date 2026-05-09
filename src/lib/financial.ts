@@ -22,12 +22,13 @@ export interface RecurringIncomeEntry {
   includeInFire: boolean;
 }
 
-function recurringIncomeAtAge(
+function recurringCashflowAtAge(
   incomes: RecurringIncomeEntry[],
   age: number,
   fireAge: number,
   inflation: number,
 ): number {
+  if (!Array.isArray(incomes)) return 0;
   let total = 0;
   for (const inc of incomes) {
     if (age < inc.startAge) continue;
@@ -59,6 +60,7 @@ export function requiredPortfolio(
   lifeExpectancy?: number,
   inflation: number = 0,
   recurringIncomes: RecurringIncomeEntry[] = [],
+  recurringExpenses: RecurringIncomeEntry[] = [],
   capitalGainsTax: number = 0,
   costBasisRatio: number = 1,
   depletePortfolio: boolean = true,
@@ -114,8 +116,9 @@ export function requiredPortfolio(
       const pensionIncome = activePensions
         .filter((p) => age >= p.startAge)
         .reduce((sum, p) => sum + p.annualAmount, 0);
-      const extraRecurring = recurringIncomeAtAge(recurringIncomes, age, fireAge, inflation);
-      const netWithdrawal = Math.max(0, retExpensesToday - pensionIncome - extraRecurring);
+      const extraRecurringIncome = recurringCashflowAtAge(recurringIncomes, age, fireAge, inflation);
+      const extraRecurringExpense = recurringCashflowAtAge(recurringExpenses, age, fireAge, inflation);
+      const netWithdrawal = Math.max(0, retExpensesToday + extraRecurringExpense - pensionIncome - extraRecurringIncome);
       
       const pBeforeWithdrawal = portfolio * (1 + realReturn);
       let grossWithdrawal = netWithdrawal;
@@ -170,6 +173,7 @@ export function survivesDrawdown(
   futureIncomes: Array<{ amount: number; yearsFromNow: number }>,
   futureExpenses: Array<{ amount: number; yearsFromNow: number }>,
   recurringIncomes: RecurringIncomeEntry[] = [],
+  recurringExpenses: RecurringIncomeEntry[] = [],
   capitalGainsTax: number = 0,
   costBasisRatio: number = 1,
 ): boolean {
@@ -190,9 +194,15 @@ export function survivesDrawdown(
     }
 
     let recurringIncome = 0;
+    let recurringExpense = 0;
     for (const inc of recurringIncomes) {
       if (age >= inc.startAge) {
         recurringIncome += inc.annualAmount * Math.pow(1 + inc.annualGrowthRate, absYear);
+      }
+    }
+    for (const exp of recurringExpenses) {
+      if (age >= exp.startAge) {
+        recurringExpense += exp.annualAmount * Math.pow(1 + exp.annualGrowthRate, absYear);
       }
     }
 
@@ -208,7 +218,7 @@ export function survivesDrawdown(
       if (ex.yearsFromNow === absYear) oneTime -= ex.amount;
     }
     const totalSpend = exp + debtPay;
-    const netWithdrawal = Math.max(0, totalSpend - pensionIncome - recurringIncome);
+    const netWithdrawal = Math.max(0, totalSpend + recurringExpense - pensionIncome - recurringIncome);
     
     const pBeforeWithdrawal = p * (1 + netReturn);
     let grossWithdrawal = netWithdrawal;

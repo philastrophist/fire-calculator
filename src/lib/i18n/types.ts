@@ -134,6 +134,7 @@ export interface Translations {
   incomePlaceholder: (i: number) => string;
   recurringIncomeStreams: string;
   noRecurringIncome: string;
+  noRecurringExpenditure: string;
   recurringIncomePlaceholder: (i: number) => string;
   recurringMonthlyIncome: string;
   recurringIncomeStartAge: string;

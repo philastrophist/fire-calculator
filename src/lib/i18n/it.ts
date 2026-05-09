@@ -134,6 +134,7 @@ export const it: Translations = {
   incomePlaceholder: (i) => `Entrata ${i} (es. Eredità, TFR)`,
   recurringIncomeStreams: 'Entrate Ricorrenti',
   noRecurringIncome: 'Nessuna entrata ricorrente (affitto, royalties, ecc.)',
+  noRecurringExpenditure: 'Nessuna spesa ricorrente (abbonamenti, manutenzione, ecc.)',
   recurringIncomePlaceholder: (i) => `Flusso ${i} (es. Affitto seconda casa)`,
   recurringMonthlyIncome: 'Entrata Mensile',
   recurringIncomeStartAge: 'Età Inizio',

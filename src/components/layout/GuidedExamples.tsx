@@ -75,6 +75,7 @@ function makeScenario(overrides: Partial<{
       futureExpenses: [],
       futureIncomes: [],
       recurringIncomes: overrides.recurringIncomes ?? [],
+      recurringExpenditures: [],
     },
   };
 }

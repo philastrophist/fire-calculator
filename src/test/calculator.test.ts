@@ -71,6 +71,7 @@ function makeInputs(overrides: Partial<{
       futureExpenses: [],
       futureIncomes: [],
       recurringIncomes: [],
+      recurringExpenditures: [],
     },
   };
 }
@@ -276,4 +277,26 @@ describe('calculateFire', () => {
     expect(retired[1]!.annualExpenses).toBeGreaterThan(retired[0]!.annualExpenses);
     expect(retired[2]!.annualExpenses).toBeGreaterThan(retired[1]!.annualExpenses);
   });
+
+  it('recurring expenditures delay FIRE compared with no recurring expenditures', () => {
+    const baseInputs = makeInputs({ monthlyInvestment: 1500, expenses: 2000 });
+    const withoutRecurringExpenditures = calculateFire(baseInputs);
+
+    const withRecurringExpendituresInputs = makeInputs({ monthlyInvestment: 1500, expenses: 2000 });
+    withRecurringExpendituresInputs.fireGoals.recurringExpenditures = [
+      {
+        id: 'rec-exp-1',
+        name: 'Second home upkeep',
+        monthlyAmount: 600,
+        startAge: withRecurringExpendituresInputs.personalInfo.currentAge,
+        annualGrowthRate: 2,
+        includeInFire: true,
+      },
+    ];
+    const withRecurringExpenditures = calculateFire(withRecurringExpendituresInputs);
+
+    expect(withRecurringExpenditures.fireAge).toBeGreaterThanOrEqual(withoutRecurringExpenditures.fireAge);
+    expect(withRecurringExpenditures.fireNumberToday).toBeGreaterThan(withoutRecurringExpenditures.fireNumberToday);
+  });
+
 });

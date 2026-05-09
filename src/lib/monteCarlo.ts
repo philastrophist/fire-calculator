@@ -132,7 +132,16 @@ export function runMonteCarlo(
       })),
   ];
 
-  // Deterministic random samples based on inputs only.
+  
+  const recurringExpenseEntries: RecurringIncomeEntry[] = (fireGoals.recurringExpenditures ?? [])
+    .filter((i) => i.monthlyAmount > 0)
+    .map((i) => ({
+      annualAmount: i.monthlyAmount * 12,
+      startAge: i.startAge,
+      annualGrowthRate: i.annualGrowthRate / 100,
+      includeInFire: i.includeInFire,
+    }));
+// Deterministic random samples based on inputs only.
   // This lets callers vary targetFireAge without regenerating the random paths.
   const samples = randomSamples ?? (() => {
     const seedStr = JSON.stringify(inputs);
@@ -195,9 +204,15 @@ export function runMonteCarlo(
       }
 
       let recurringIncome = 0;
+      let recurringExpense = 0;
       for (const inc of recurringIncomeEntries) {
         if (age >= inc.startAge) {
           recurringIncome += inc.annualAmount * Math.pow(1 + inc.annualGrowthRate, i);
+        }
+      }
+      for (const exp of recurringExpenseEntries) {
+        if (age >= exp.startAge) {
+          recurringExpense += exp.annualAmount * Math.pow(1 + exp.annualGrowthRate, i);
         }
       }
 
@@ -262,6 +277,7 @@ export function runMonteCarlo(
           personalInfo.lifeExpectancy,
           inflation,
           recurringIncomeEntries.filter((inc) => inc.startAge <= age || inc.includeInFire),
+          recurringExpenseEntries.filter((exp) => exp.startAge <= age || exp.includeInFire),
           capitalGainsTax,
           currentCostBasisRatio,
           fireGoals.depletePortfolio !== false,
@@ -319,6 +335,7 @@ export function runMonteCarlo(
                 fireGoals.futureIncomes.filter((e) => e.yearsFromNow > i),
                 fireGoals.futureExpenses.filter((e) => e.yearsFromNow > i),
                 recurringIncomeEntries,
+                recurringExpenseEntries,
                 capitalGainsTax,
                 currentCostBasisRatio
               );
@@ -339,7 +356,7 @@ export function runMonteCarlo(
         portfolio = mainPortfolio;
 
         const totalSpend = retirementExpenses + annualDebtPayments;
-        const netWithdrawal = Math.max(0, totalSpend - pensionIncome - recurringIncome);
+        const netWithdrawal = Math.max(0, totalSpend + recurringExpense - pensionIncome - recurringIncome);
 
         const growth = portfolio * randomReturn;
         const portfolioBeforeWithdrawal = portfolio + growth;
